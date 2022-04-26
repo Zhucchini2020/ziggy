@@ -20,8 +20,14 @@ obtain the total number of samles
 clip_length = 3
 
 """
-Sample rate (in samples/second): 
+Sample rate (in samples/second): target sample rate for conversion between audio and image
 """
+sample_rate = 44100
+
+"""
+Max frequency included in the spectrogram
+"""
+max_frequency = 8000
 
 """
 Sample size for calculating the mean and standard deviation of the
