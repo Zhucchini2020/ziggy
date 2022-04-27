@@ -12,8 +12,8 @@ from datetime import datetime
 import tensorflow as tf
 
 import hyperparameters as hp
-from models import YourModel, VGGModel
-from preprocess import Datasets
+from models import YourModel
+from preprocess import Dataset
 from skimage.transform import resize
 from tensorboard_utils import \
         ImageLabelingLogger, ConfusionMatrixLogger, CustomModelSaver
@@ -33,12 +33,6 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Let's train some neural nets!",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
-        '--task',
-        required=True,
-        choices=['1', '3'],
-        help='''Which task of the assignment to run -
-        training from scratch (1), or fine tuning VGG-16 (3).''')
     parser.add_argument(
         '--data',
         default='..'+os.sep+'data'+os.sep,
@@ -75,7 +69,7 @@ def train(model, datasets, checkpoint_path, logs_path, init_epoch):
             update_freq='batch',
             profile_batch=0),
         ImageLabelingLogger(logs_path, datasets),
-        CustomModelSaver(checkpoint_path, ARGS.task, hp.max_num_weights)
+        CustomModelSaver(checkpoint_path, hp.max_num_weights)
     ]
 
     # Include confusion logger in callbacks if flag set
@@ -125,17 +119,14 @@ def main():
     # set relative to the directory of run.py
     if os.path.exists(ARGS.data):
         ARGS.data = os.path.abspath(ARGS.data)
-    if os.path.exists(ARGS.load_vgg):
-        ARGS.load_vgg = os.path.abspath(ARGS.load_vgg)
-
     # Run script from location of run.py
     os.chdir(sys.path[0])
 
-    datasets = Datasets(ARGS.data, ARGS.task)
+    datasets = Dataset(ARGS.data)
 
     
     model = YourModel()
-    model(tf.keras.Input(shape=(128, 87)))
+    model(tf.keras.Input(shape=(128, 87,1)))
     checkpoint_path = "checkpoints" + os.sep + \
             "your_model" + os.sep + timestamp + os.sep
     logs_path = "logs" + os.sep + "your_model" + \
@@ -146,10 +137,8 @@ def main():
     
     # Load checkpoints
     if ARGS.load_checkpoint is not None:
-        if ARGS.task == '1':
-            model.load_weights(ARGS.load_checkpoint, by_name=False)
-        else:
-            model.head.load_weights(ARGS.load_checkpoint, by_name=False)
+        model.load_weights(ARGS.load_checkpoint, by_name=False)
+        
 
     # Make checkpoint directory if needed
     if not ARGS.evaluate and not os.path.exists(checkpoint_path):

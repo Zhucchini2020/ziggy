@@ -7,6 +7,7 @@ Brown University
 import tensorflow as tf
 from tensorflow.keras.layers import \
     Conv2D, MaxPool2D, Dropout, Flatten, Dense, SeparableConv2D
+import tensorflow_addons as tfa
 
 import hyperparameters as hp
 
@@ -17,7 +18,7 @@ class YourModel(tf.keras.Model):
     def __init__(self):
         super(YourModel, self).__init__()
 
-        self.optimizer = tf.keras.optimizers.AdamW(learning_rate = 0.001, weight_decay = 0.3)
+        self.optimizer = tfa.optimizers.AdamW(learning_rate = 0.001, weight_decay = 0.3)
 
         self.architecture = [SeparableConv2D(filters=8, kernel_size=(7, 7), padding='same',
                    strides=(1, 1), activation='gelu'),
