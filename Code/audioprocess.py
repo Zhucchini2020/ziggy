@@ -33,12 +33,11 @@ def spectrogrammify(path):
 data_branch = ".\\Data\\genres_original"
 
 for dir in os.listdir(data_branch):
-    if (dir in ["jazz", "metal", "pop", "reggae", "rock"]):
-        newdir = os.path.join(data_branch, dir)
-        for filename in os.listdir(newdir):
-            file = os.path.join(newdir, filename)
-            print(file)
-            a = spectrogrammify(file)
+    newdir = os.path.join(data_branch, dir)
+    for filename in os.listdir(newdir):
+        file = os.path.join(newdir, filename)
+        print(file)
+        a = spectrogrammify(file)
 
 #consider removing hiphop38, it behaves weird
 #python cant decode jazz54, removed from dataset
