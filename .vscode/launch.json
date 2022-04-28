@@ -11,6 +11,14 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true
+        },
+        {
+            "name": "Train Model",
+            "type": "python",
+            "request": "launch",
+            "program": "./Code/run.py",
+            "args": ["--data", "./Data/images_original"],
+            "console": "integratedTerminal"
         }
     ]
 }

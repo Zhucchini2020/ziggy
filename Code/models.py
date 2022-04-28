@@ -1,8 +1,3 @@
-"""
-Homework 5 - CNNs
-CS1430 - Computer Vision
-Brown University
-"""
 
 import tensorflow as tf
 from tensorflow.keras.layers import \
@@ -13,7 +8,6 @@ import hyperparameters as hp
 
 
 class YourModel(tf.keras.Model):
-    """ Your own neural network model. """
 
     def __init__(self):
         super(YourModel, self).__init__()

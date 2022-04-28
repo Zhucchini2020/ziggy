@@ -8,10 +8,10 @@ import matplotlib.pyplot as plt
 import os
 
 def spectrogrammify(path):
-    split_path = path.split("/")
-    folder_path = "./Data/generated_spectograms/" + split_path[-2]
-    save_path = folder_path + "/" + split_path[-1] + "_"
-    if not os.path.isdir(folder_path): os.makedirs("./Data/generated_spectograms/" + split_path[-2])
+    split_path = path.split("\\")
+    folder_path = ".\\Data\\generated_spectograms\\" + split_path[-2]
+    save_path = folder_path + "\\" + split_path[-1] + "_"
+    if not os.path.isdir(folder_path): os.makedirs(".\\Data\\generated_spectograms\\" + split_path[-2])
 
     audio, sampling_rate = librosa.load(path, sr=hp.sample_rate, mono=True)
     total_samples = len(audio)
@@ -21,7 +21,7 @@ def spectrogrammify(path):
         spec = librosa.feature.melspectrogram(y=clip, sr=sampling_rate, fmax=hp.max_frequency)
         spec = np.log(spec + 1e-8) # avoiding log0, necessary step because amplitude scales logarithmically
         img = sklearn.preprocessing.minmax_scale(spec, feature_range=(0,255))
-        img = np.flip(img, axis=0).astype("uint8")
+        img = np.flip(img, axis=0).astype("uint8") # for data interpretation purposes, the spectrogram displays upside down by default
 
         skimage.io.imsave(save_path + str(i) + ".png", img)
         
@@ -30,7 +30,15 @@ def spectrogrammify(path):
 
     return np.array(result)
 
+data_branch = ".\\Data\\genres_original"
 
-s = spectrogrammify("./Data/genres_original/hiphop/hiphop.00000.wav")
+for dir in os.listdir(data_branch):
+    if (dir in ["jazz", "metal", "pop", "reggae", "rock"]):
+        newdir = os.path.join(data_branch, dir)
+        for filename in os.listdir(newdir):
+            file = os.path.join(newdir, filename)
+            print(file)
+            a = spectrogrammify(file)
 
-#load librosa song through audio, sampling_rate = librosa.load(path, mono=True)
+#consider removing hiphop38, it behaves weird
+#python cant decode jazz54, removed from dataset
