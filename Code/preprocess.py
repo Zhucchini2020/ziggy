@@ -22,9 +22,9 @@ class Dataset():
         #self.std = np.ones((hp.img_size,hp.img_size,3))
         #self.calc_mean_and_std()
         self.train_data = self.get_data(
-            self.data_path,True)
+            os.path.join(self.data_path, "train"),True)
         self.test_data = self.get_data(
-            self.data_path,True)
+            os.path.join(self.data_path, "test"),True)
 
     def preprocess_fn(self, img):
         """ Preprocess function for ImageDataGenerator. """

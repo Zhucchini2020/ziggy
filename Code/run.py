@@ -26,7 +26,6 @@ import numpy as np
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-
 def parse_args():
     """ Perform command-line argument parsing. """
 
@@ -35,7 +34,7 @@ def parse_args():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         '--data',
-        default='..'+os.sep+'data'+os.sep,
+        default= os.path.join(os.path.normpath(os.getcwd() + os.sep + os.pardir), "Data\\generated_spectrograms\\"), 
         help='Location where the dataset is stored.')
     parser.add_argument(
         '--load-checkpoint',
@@ -99,11 +98,11 @@ def test(model, test_data):
 
 def main():
     """ Main function. """
-
+    
     time_now = datetime.now()
     timestamp = time_now.strftime("%m%d%y-%H%M%S")
     init_epoch = 0
-
+   
     # If loading from a checkpoint, the loaded checkpoint's directory
     # will be used for future checkpoints
     if ARGS.load_checkpoint is not None:
@@ -120,6 +119,7 @@ def main():
     if os.path.exists(ARGS.data):
         ARGS.data = os.path.abspath(ARGS.data)
     # Run script from location of run.py
+    
     os.chdir(sys.path[0])
 
     datasets = Dataset(ARGS.data)
@@ -157,6 +157,7 @@ def main():
 
 
 # Make arguments global
+
 ARGS = parse_args()
 
 main()
