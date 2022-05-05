@@ -1,8 +1,4 @@
-"""
-Homework 5 - CNNs
-CS1430 - Computer Vision
-Brown University
-"""
+
 
 import os
 import sys
@@ -24,6 +20,8 @@ from matplotlib import pyplot as plt
 import numpy as np
 import random
 import shutil
+import audioprocess
+from scipy import stats
 
 from keras.applications.vgg16 import VGG16
 
@@ -70,6 +68,10 @@ def parse_args():
         You can use this to test an already trained model by loading
         its checkpoint.''')
     parser.add_argument(
+        '--path',
+        default= os.path.join(os.path.normpath(os.getcwd() + os.sep + os.pardir), "Data\\"), 
+        help='Directory where the sample(s) to evaluate is stored.')
+    parser.add_argument(
         '--testsplit',
         action='store_true',
         help='''Moves files from the training directory to the test directory''')
@@ -112,6 +114,21 @@ def test(model, test_data):
         x=test_data,
         verbose=1,
     )
+
+def eval(model, data_path):
+    """ Model evaluation routine. """
+    ids = ["Blues", "Classical", "Country", "Disco", "Hiphop", "Jazz", "Metal", "Pop", "Reggae", "Rock"]
+    for filename in os.listdir(data_path):
+        if filename.endswith(".wav") or filename.endswith(".mp3"):
+            file = os.path.join(data_path, filename)
+            spec_array = audioprocess.spectrogrammify(file, False).astype("float32")
+            predictions = model.predict(x=np.expand_dims(spec_array, axis=-1),verbose=1,)
+            total_prediction = stats.mode(np.argmax(predictions, axis=1)).mode[0]
+            print("File: " + filename + "Prediction: " + ids[total_prediction])
+            print(np.sort(np.argmax(predictions, axis=1)))
+
+    # Run model on test set
+    
 
 
 def main():
@@ -195,7 +212,7 @@ def main():
         metrics=["sparse_categorical_accuracy"])
 
     if ARGS.evaluate:
-        test(model, datasets.test_data)
+        eval(model, ARGS.path)
     else:
         train(model, datasets, checkpoint_path, logs_path, init_epoch)
     # Splice out different parts of input songs, generate type of song, mode it and test on actual songs

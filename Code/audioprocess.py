@@ -7,11 +7,12 @@ import sklearn.preprocessing
 import matplotlib.pyplot as plt
 import os
 
-def spectrogrammify(path):
-    split_path = path.split("\\")
-    folder_path = ".\\Data\\generated_spectograms\\" + split_path[-2]
-    save_path = folder_path + "\\" + split_path[-1] + "_"
-    if not os.path.isdir(folder_path): os.makedirs(".\\Data\\generated_spectograms\\" + split_path[-2])
+def spectrogrammify(path, save):
+    if save:
+        split_path = path.split("\\")
+        folder_path = ".\\Data\\generated_spectograms\\" + split_path[-2]
+        save_path = folder_path + "\\" + split_path[-1] + "_"
+        if not os.path.isdir(folder_path): os.makedirs(".\\Data\\generated_spectograms\\" + split_path[-2])
 
     audio, sampling_rate = librosa.load(path, sr=hp.sample_rate, mono=True)
     total_samples = len(audio)
@@ -23,13 +24,14 @@ def spectrogrammify(path):
         img = sklearn.preprocessing.minmax_scale(spec, feature_range=(0,255))
         img = np.flip(img, axis=0).astype("uint8") # for data interpretation purposes, the spectrogram displays upside down by default
 
-        skimage.io.imsave(save_path + str(i) + ".png", img)
+        if save: skimage.io.imsave(save_path + str(i) + ".png", img)
         
         
         result.append(img)
 
     return np.array(result)
 
+'''
 data_branch = ".\\Data\\genres_original"
 
 for dir in os.listdir(data_branch):
@@ -41,3 +43,4 @@ for dir in os.listdir(data_branch):
 
 #consider removing hiphop38, it behaves weird
 #python cant decode jazz54, removed from dataset
+'''
