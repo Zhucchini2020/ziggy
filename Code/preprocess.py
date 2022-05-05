@@ -64,7 +64,7 @@ class Dataset():
             class_mode='sparse',
             batch_size=hp.batch_size,
             shuffle=shuffle,
-            classes=classes_for_flow, color_mode = 'grayscale')
+            classes=classes_for_flow, color_mode = 'rgb')
 
         # Setup the dictionaries if not already done
         if not bool(self.idx_to_class):

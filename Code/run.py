@@ -12,17 +12,20 @@ from datetime import datetime
 import tensorflow as tf
 
 import hyperparameters as hp
-from models import YourModel
+from models import YourModel, VGGModel
 from preprocess import Dataset
 from skimage.transform import resize
 from tensorboard_utils import \
         ImageLabelingLogger, ConfusionMatrixLogger, CustomModelSaver
 
 from skimage.io import imread
-from lime import lime_image
 from skimage.segmentation import mark_boundaries
 from matplotlib import pyplot as plt
 import numpy as np
+import random
+import shutil
+
+from keras.applications.vgg16 import VGG16
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -32,6 +35,17 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Let's train some neural nets!",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '--load-vgg',
+        default='vgg16_imagenet.h5',
+        help='''Path to pre-trained VGG-16 file (only applicable to
+        task 3).''')
+    parser.add_argument(
+        '--task',
+        required=True,
+        choices=['1', '3'],
+        help='''Which task of the assignment to run -
+        training from scratch (1), or fine tuning VGG-16 (3).''')
     parser.add_argument(
         '--data',
         default= os.path.join(os.path.normpath(os.getcwd() + os.sep + os.pardir), "Data\\generated_spectrograms\\"), 
@@ -55,6 +69,10 @@ def parse_args():
         help='''Skips training and evaluates on the test set once.
         You can use this to test an already trained model by loading
         its checkpoint.''')
+    parser.add_argument(
+        '--testsplit',
+        action='store_true',
+        help='''Moves files from the training directory to the test directory''')
 
     return parser.parse_args()
 
@@ -102,7 +120,18 @@ def main():
     time_now = datetime.now()
     timestamp = time_now.strftime("%m%d%y-%H%M%S")
     init_epoch = 0
-   
+    if ARGS.testsplit:
+        print("Splitting spectrograms from training into testing (150 per genre)")
+        source = os.path.join(ARGS.data, "train")
+        dest = os.path.join(ARGS.data, "test")
+        for genre in ["blues","classical","country","disco","hiphop","jazz","metal","pop","reggae","rock"]:
+            genreSource = os.path.join(source, genre)
+            genreDest = os.path.join(dest, genre)
+            files = os.listdir(genreSource)
+            for file_name in random.sample(files, 150):
+                shutil.move(os.path.join(genreSource, file_name), genreDest)
+        
+
     # If loading from a checkpoint, the loaded checkpoint's directory
     # will be used for future checkpoints
     if ARGS.load_checkpoint is not None:
@@ -124,16 +153,31 @@ def main():
 
     datasets = Dataset(ARGS.data)
 
-    
-    model = YourModel()
-    model(tf.keras.Input(shape=(128, 87,1)))
-    checkpoint_path = "checkpoints" + os.sep + \
+    if ARGS.task == '1':
+        model = YourModel()
+        model(tf.keras.Input(shape=(128,87,1)))
+        checkpoint_path = "checkpoints" + os.sep + \
             "your_model" + os.sep + timestamp + os.sep
-    logs_path = "logs" + os.sep + "your_model" + \
+        logs_path = "logs" + os.sep + "your_model" + \
             os.sep + timestamp + os.sep
 
-    # Print summary of model
-    model.summary()
+        # Print summary of model
+        model.summary()
+    else:
+        model = VGGModel()
+
+        checkpoint_path = "checkpoints" + os.sep + \
+            "vgg_model" + os.sep + timestamp + os.sep
+        logs_path = "logs" + os.sep + "vgg_model" + \
+            os.sep + timestamp + os.sep
+        model(tf.keras.Input(shape=(224,224,3)))
+
+        # Print summaries for both parts of the model
+        model.vgg16.summary()
+        model.head.summary()
+
+        # Load base of VGG model
+        model.vgg16.load_weights(ARGS.load_vgg, by_name=True)
     
     # Load checkpoints
     if ARGS.load_checkpoint is not None:
@@ -154,10 +198,15 @@ def main():
         test(model, datasets.test_data)
     else:
         train(model, datasets, checkpoint_path, logs_path, init_epoch)
+    # Splice out different parts of input songs, generate type of song, mode it and test on actual songs
+    # Maybe even a web interface?? (mebe)
+    # model.load_weights() with a weights file
+    # model.predict()
+    # 
 
 
 # Make arguments global
-
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 ARGS = parse_args()
 
 main()
