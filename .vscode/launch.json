@@ -29,6 +29,15 @@
             "args": ["--data", "C:/Users/pongf/Documents/CSCV/Proj/Ziggy/Data/generated_spectrograms", "--task", "1", 
                 "--load-checkpoint", "C:/Users/pongf/Documents/CSCV/Proj/ziggy/Code/checkpoints/your_model/050222-140939/your.weights.e033-acc0.7187.h5"],
             "console": "integratedTerminal"
+        },
+        {
+            "name": "Bigtest",
+            "type": "python",
+            "request": "launch",
+            "program": "./Code/run.py",
+            "args": ["--data", "C:/Users/pongf/Documents/CSCV/Proj/Ziggy/Data/generated_spectrograms", "--task", "1", 
+                "--load-checkpoint", "C:/Users/pongf/Documents/CSCV/Proj/ziggy/Code/checkpoints/your_model/050222-140939/your.weights.e033-acc0.7187.h5", "--bigtest", "--bigtestpath", "C:\\Users\\pongf\\Documents\\CSCV\\Proj\\Ziggy\\Data\\genres_original"],
+            "console": "integratedTerminal"
         }
     ]
 }

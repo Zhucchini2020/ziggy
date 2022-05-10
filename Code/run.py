@@ -72,6 +72,13 @@ def parse_args():
         default= os.path.join(os.path.normpath(os.getcwd() + os.sep + os.pardir), "Data\\"), 
         help='Directory where the sample(s) to evaluate is stored.')
     parser.add_argument(
+        '--bigtest',
+        action='store_true')
+    parser.add_argument(
+        '--bigtestpath',
+        default= os.path.join(os.path.normpath(os.getcwd() + os.sep + os.pardir), "Data\\genres_original\\"), 
+        help='Directory where the bigtest music is stored.')
+    parser.add_argument(
         '--testsplit',
         action='store_true',
         help='''Moves files from the training directory to the test directory''')
@@ -123,12 +130,40 @@ def eval(model, data_path):
             file = os.path.join(data_path, filename)
             spec_array = audioprocess.spectrogrammify(file, False).astype("float32")
             predictions = model.predict(x=np.expand_dims(spec_array, axis=-1),verbose=1,)
-            total_prediction = stats.mode(np.argmax(predictions, axis=1)).mode[0]
-            print("File: " + filename + "Prediction: " + ids[total_prediction])
-            print(np.sort(np.argmax(predictions, axis=1)))
+            clip_predictions = np.argmax(predictions, axis=1)
+            total_prediction = stats.mode(clip_predictions).mode[0]
+            print("File: " + filename + " Prediction: " + ids[total_prediction])
+            al_rate = np.sum(clip_predictions == total_prediction) / np.size(clip_predictions)
+            print("Alignment rate: " + str(al_rate))
 
-    # Run model on test set
-    
+
+def datatest(model, data_branch):
+    ids = ["Blues", "Classical", "Country", "Disco", "Hiphop", "Jazz", "Metal", "Pop", "Reggae", "Rock"]
+    count = 0
+    outof = 0
+    for dir in os.listdir(data_branch):
+        label = ["blues", "classical", "country", "disco", "hiphop", "jazz", "metal", "pop", "reggae", "rock"].index(dir)
+        newdir = os.path.join(data_branch, dir)
+        i = 1
+        for filename in os.listdir(newdir):
+            if i > 20: break #only testing on 20 per folder
+            file = os.path.join(newdir, filename)
+            spec_array = audioprocess.spectrogrammify(file, False).astype("float32")
+            predictions = model.predict(x=np.expand_dims(spec_array, axis=-1),verbose=1,)
+            clip_predictions = np.argmax(predictions, axis=1)
+            total_prediction = stats.mode(clip_predictions).mode[0]
+            print("File: " + filename + " Prediction: " + ids[total_prediction])
+            al_rate = np.sum(clip_predictions == total_prediction) / np.size(clip_predictions)
+            print("Alignment rate: " + str(al_rate))
+            if (label == total_prediction): count += 1
+            outof += 1
+            i += 1
+    print("Full test accuracy: " + str(count / outof))
+
+
+
+
+
 
 
 def main():
@@ -211,7 +246,9 @@ def main():
         loss=model.loss_fn,
         metrics=["sparse_categorical_accuracy"])
 
-    if ARGS.evaluate:
+    if ARGS.bigtest:
+        datatest(model, ARGS.bigtestpath)
+    elif ARGS.evaluate:
         eval(model, ARGS.path)
     else:
         train(model, datasets, checkpoint_path, logs_path, init_epoch)
